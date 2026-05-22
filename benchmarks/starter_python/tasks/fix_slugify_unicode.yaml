@@ -1,0 +1,12 @@
+id: fix_slugify_unicode
+name: Fix slugify unicode handling
+repo_path: ../repos/slugify_project
+prompt: |
+  The slugify function drops non-ASCII characters instead of transliterating them.
+  Fix slugify so that "Café au lait" becomes "cafe-au-lait".
+setup_commands:
+  - python3 -m pip install . --quiet
+  - python3 -m pip install pytest --quiet
+test_commands:
+  - pytest -q
+timeout_seconds: 120
