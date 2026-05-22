@@ -8,5 +8,5 @@ setup_commands:
   - python3 -m pip install . --quiet
   - python3 -m pip install pytest --quiet
 test_commands:
-  - pytest -q
+  - python3 -m pytest -q
 timeout_seconds: 120

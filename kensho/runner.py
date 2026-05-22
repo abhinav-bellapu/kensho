@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from kensho.agents.base import AgentResult, BaseAgent
 from kensho.task_spec import TaskSpec, load_task_spec
 from kensho.trace import TraceEvent, TraceLogger
 
@@ -26,9 +27,10 @@ class RunResult:
     stderr: str
     duration_ms: int
     trace: list[TraceEvent] = field(default_factory=list)
+    agent: AgentResult | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        payload: dict[str, Any] = {
             "task_id": self.task_id,
             "status": self.status,
             "score": self.score,
@@ -37,6 +39,13 @@ class RunResult:
             "duration_ms": self.duration_ms,
             "trace": [event.to_dict() for event in self.trace],
         }
+        if self.agent is not None:
+            payload["agent"] = {
+                "submitted": self.agent.submitted,
+                "steps": self.agent.steps,
+                "message": self.agent.message,
+            }
+        return payload
 
 
 def _run_command(
@@ -126,6 +135,26 @@ def _run_test_command(
     return False, None
 
 
+def _run_agent(
+    trace: TraceLogger,
+    agent: BaseAgent,
+    spec: TaskSpec,
+    workspace: Path,
+) -> AgentResult:
+    trace.log("agent_started", {"agent": type(agent).__name__, "task_id": spec.id})
+    result = agent.run(spec, workspace, trace)
+    trace.log(
+        "agent_finished",
+        {
+            "agent": type(agent).__name__,
+            "submitted": result.submitted,
+            "steps": len(result.steps),
+            "message": result.message,
+        },
+    )
+    return result
+
+
 def _finish_run(
     trace: TraceLogger,
     spec: TaskSpec,
@@ -134,6 +163,7 @@ def _finish_run(
     stdout: str,
     stderr: str,
     duration_ms: int,
+    agent: AgentResult | None = None,
 ) -> RunResult:
     trace.log("scorer_result", {"status": status, "score": score})
     trace.log("run_finished", {"status": status, "duration_ms": duration_ms})
@@ -145,13 +175,15 @@ def _finish_run(
         stderr=stderr,
         duration_ms=duration_ms,
         trace=trace.list_events(),
+        agent=agent,
     )
 
 
-def run_task(task_yaml: Path) -> RunResult:
+def run_task(task_yaml: Path, agent: BaseAgent | None = None) -> RunResult:
     """Execute a benchmark task and return structured results."""
     started = time.perf_counter()
     trace = TraceLogger()
+    agent_result: AgentResult | None = None
 
     try:
         spec = load_task_spec(task_yaml)
@@ -207,6 +239,9 @@ def run_task(task_yaml: Path) -> RunResult:
                         duration_ms=elapsed_ms,
                     )
 
+            if agent is not None:
+                agent_result = _run_agent(trace, agent, spec, workspace)
+
             test_failed = False
             for index, command in enumerate(spec.test_commands):
                 failed, final_status = _run_test_command(
@@ -228,6 +263,7 @@ def run_task(task_yaml: Path) -> RunResult:
                         stdout="".join(stdout_parts),
                         stderr="".join(stderr_parts),
                         duration_ms=elapsed_ms,
+                        agent=agent_result,
                     )
                 if failed:
                     test_failed = True
@@ -243,6 +279,7 @@ def run_task(task_yaml: Path) -> RunResult:
                 stdout="".join(stdout_parts),
                 stderr="".join(stderr_parts),
                 duration_ms=elapsed_ms,
+                agent=agent_result,
             )
     except Exception as exc:
         elapsed_ms = int((time.perf_counter() - started) * 1000)
@@ -262,9 +299,10 @@ def run_task(task_yaml: Path) -> RunResult:
             stderr=str(exc),
             duration_ms=elapsed_ms,
             trace=trace.list_events(),
+            agent=agent_result,
         )
 
 
-def run_task_json(task_yaml: Path) -> str:
+def run_task_json(task_yaml: Path, agent: BaseAgent | None = None) -> str:
     """Run a task and return JSON-serialized results."""
-    return json.dumps(run_task(task_yaml).to_dict(), indent=2)
+    return json.dumps(run_task(task_yaml, agent=agent).to_dict(), indent=2)
