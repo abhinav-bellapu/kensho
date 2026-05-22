@@ -1,0 +1,21 @@
+[
+  {
+    "tool": "read_file",
+    "args": {
+      "path": "slugify/core.py"
+    }
+  },
+  {
+    "tool": "write_file",
+    "args": {
+      "path": "slugify/core.py",
+      "content": "\"\"\"Convert text to URL-friendly slugs.\"\"\"\n\nimport unicodedata\n\n\ndef slugify(text: str) -> str:\n    \"\"\"Return a lowercase slug with spaces replaced by hyphens.\"\"\"\n    normalized = unicodedata.normalize(\"NFKD\", text)\n    ascii_text = normalized.encode(\"ascii\", errors=\"ignore\").decode(\"ascii\")\n    return \"-\".join(ascii_text.lower().strip().split())\n"
+    }
+  },
+  {
+    "tool": "submit",
+    "args": {
+      "message": "Fixed Unicode slugification."
+    }
+  }
+]
