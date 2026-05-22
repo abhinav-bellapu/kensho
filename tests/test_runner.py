@@ -108,7 +108,9 @@ def test_run_result_serializes_to_json(tmp_path: Path) -> None:
         "stdout",
         "stderr",
         "duration_ms",
+        "trace",
     }
+    assert isinstance(payload["trace"], list)
 
 
 @pytest.mark.integration
