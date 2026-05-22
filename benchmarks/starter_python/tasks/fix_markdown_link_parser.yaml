@@ -1,0 +1,12 @@
+id: fix_markdown_link_parser
+name: Fix markdown link parser
+repo_path: ../repos/markdown_links_project
+prompt: |
+  extract_links should return every [label](url) markdown link in the input string.
+  The current implementation only returns the first link.
+setup_commands:
+  - python3 -m pip install . --quiet
+  - python3 -m pip install pytest --quiet
+test_commands:
+  - python3 -m pytest -q
+timeout_seconds: 120

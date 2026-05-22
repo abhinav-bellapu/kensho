@@ -1,0 +1,12 @@
+id: fix_lru_cache_eviction
+name: Fix LRU cache eviction order
+repo_path: ../repos/lru_cache_project
+prompt: |
+  LRUCache should evict the least recently used key when capacity is exceeded.
+  The current implementation evicts the most recently used key instead.
+setup_commands:
+  - python3 -m pip install . --quiet
+  - python3 -m pip install pytest --quiet
+test_commands:
+  - python3 -m pytest -q
+timeout_seconds: 120

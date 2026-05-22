@@ -1,0 +1,12 @@
+id: fix_binary_search_off_by_one
+name: Fix binary search off-by-one
+repo_path: ../repos/binary_search_project
+prompt: |
+  binary_search should return the index of a target in a sorted list, or -1 if missing.
+  The current loop uses left < right and misses targets at the final index.
+setup_commands:
+  - python3 -m pip install . --quiet
+  - python3 -m pip install pytest --quiet
+test_commands:
+  - python3 -m pytest -q
+timeout_seconds: 120

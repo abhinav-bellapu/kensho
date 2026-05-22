@@ -1,0 +1,13 @@
+id: fix_rate_limiter_boundary
+name: Fix rate limiter window boundary
+repo_path: ../repos/rate_limiter_project
+prompt: |
+  RateLimiter should allow up to max_requests per window and start a new window
+  when timestamp - window_start >= window_seconds. The current code uses >
+  instead of >= and mishandles boundary timestamps.
+setup_commands:
+  - python3 -m pip install . --quiet
+  - python3 -m pip install pytest --quiet
+test_commands:
+  - python3 -m pytest -q
+timeout_seconds: 120

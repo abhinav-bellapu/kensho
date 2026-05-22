@@ -1,0 +1,12 @@
+id: fix_graph_cycle_detection
+name: Fix directed graph cycle detection
+repo_path: ../repos/graph_cycle_project
+prompt: |
+  has_cycle should detect cycles in a directed graph represented as an adjacency list.
+  The current DFS marks nodes globally and falsely reports cycles in DAGs with reconverging paths.
+setup_commands:
+  - python3 -m pip install . --quiet
+  - python3 -m pip install pytest --quiet
+test_commands:
+  - python3 -m pytest -q
+timeout_seconds: 120

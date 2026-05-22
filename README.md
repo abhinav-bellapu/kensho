@@ -9,6 +9,21 @@ Kensho Bench is a **local, zero-cost** evaluation harness for autonomous coding 
 - No Docker, database, or frontend in this milestone
 - Runs entirely on your machine with Python 3.10+
 
+## Starter benchmark suite
+
+Under `benchmarks/starter_python/` you will find **intentionally broken** mini Python repos and matching task YAML files. Each task copies a repo into a sandbox, runs setup, optionally runs an agent, then scores with pytest. Without an agent, every starter task should return `"status": "failed"`.
+
+| Task ID | What the bug exercises |
+|---------|-------------------------|
+| `fix_slugify_unicode` | Unicode transliteration vs stripping non-ASCII |
+| `fix_binary_search_off_by_one` | Binary search loop boundary (`left < right`) |
+| `fix_lru_cache_eviction` | LRU eviction order (wrong end of recency list) |
+| `fix_markdown_link_parser` | Parsing multiple / adjacent markdown links |
+| `fix_rate_limiter_boundary` | Fixed-window rate limit at timestamp boundaries |
+| `fix_graph_cycle_detection` | DFS cycle detection vs DAG reconvergence |
+
+Each repo includes a `README.md` describing expected behavior and the deliberate defect.
+
 ## Install
 
 ```bash
@@ -24,9 +39,8 @@ Runs setup commands, then test commands, and prints JSON with `status`, `score`,
 
 ```bash
 python -m kensho run benchmarks/starter_python/tasks/fix_slugify_unicode.yaml
+python -m kensho run benchmarks/starter_python/tasks/fix_binary_search_off_by_one.yaml
 ```
-
-The starter slugify task is intentionally buggy and should return `"status": "failed"` until fixed.
 
 ## Run with a scripted agent
 
